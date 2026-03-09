@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EMBASSY PMS – Asset Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --orange:#f7931e;--bg:#f3f6fb;--shadow:0 10px 25px rgba(0,0,0,.15);
+  font-family:"Segoe UI",Arial;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;width:100%;overflow:hidden;background:var(--bg)}
+
+/* LOGIN */
+
+#loginPage{
+  height:100vh;
+  background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url("Embassy_logo .jpeg") center/cover no-repeat;
+  display:flex;align-items:center;justify-content:center
+}
+.login-card{background:#fff;padding:30px;border-radius:14px;box-shadow:var(--shadow);width:320px;text-align:center}
+.login-card input,.login-card button{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ccc}
+.login-card button{background:var(--orange);color:#fff;border:none;cursor:pointer}
+#error{color:red}
+
+/* LAYOUT */
+#appPage{display:none;width:100vw;height:100vh}
+.dashboard{display:flex;width:100%;height:100%}
+.sidebar{width:240px;background:var(--orange);color:#fff;padding:12px 16px;transition:.3s}
+.sidebar.hide{width:0;padding:0;overflow:hidden}
+.sidebar .brand{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.sidebar img{width:34px;height:34px;background:#fff;padding:4px;border-radius:6px}
+.sidebar li{list-style:none;padding:10px;border-radius:6px;cursor:pointer;margin-bottom:6px}
+.sidebar li.active,.sidebar li:hover{background:rgba(255,255,255,.2)}
+
+.main-area{flex:1;display:flex;flex-direction:column;height:100vh}
+.topbar{background:var(--orange);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.topbar .left span{margin-right:10px}
+.content{flex:1;padding:16px;overflow:auto}
+
+
+/* CARDS */
+
+.cards{
+display:flex;
+gap:16px
+}
+
+.card{
+flex:1;
+background:#fff;
+border-radius:12px;
+overflow:hidden;
+cursor:pointer;
+box-shadow:0 4px 10px rgba(0,0,0,.1)
+}
+
+.card img{
+width:100%;
+height:200px;
+object-fit:cover
+}
+
+.card p{
+text-align:center;
+font-weight:600;
+padding:10px
+}
+/* SECTIONS */
+.section{display:none}
+.cards{display:flex;gap:16px}
+.card{flex:1;background:#fff;border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.card img{width:100%;height:200px;object-fit:cover}
+.card p{text-align:center;font-weight:600;padding:10px}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;margin-top:10px}
+th{background:var(--orange);color:#fff;padding:8px;text-align:left}
+td{padding:8px;border-bottom:1px solid #eee}
+tr:hover{background:#fff3e0;cursor:pointer}
+.back-btn{border:none;background:#fff;color:var(--orange);font-weight:600;cursor:pointer;margin-bottom:10px}
+
+/* DETAILS POPUP */
+#details{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center}
+.details-box{background:#fff;padding:20px;border-radius:14px;width:420px;max-width:90%}
+.details-box h3{color:var(--orange);margin-top:0}
+.close{float:right;font-size:20px;cursor:pointer}
+
+.logout-btn{
+  margin-left:12px;
+  padding:7px 14px;
+  border:none;
+  border-radius:6px;
+  background:#fff;
+  color:#f7931e;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.logout-btn:hover{
+  background:#ffe0b2;
+}
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-card">
+    <h2>EMBASSY</h2>
+    <h3>Login to Account</h3>
+    <input id="uid" placeholder="User ID">
+    <input id="pwd" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div id="error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appPage" class="dashboard">
+  <div class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="logo.jpg">
+      <h3>EMBASSY</h3>
+    </div>
+    <ul>
+      <li class="active" onclick="showSection('dashboard',this)">Dashboard</li>
+      <li onclick="showSection('f2',this)">F2 Block Details</li>
+      <li onclick="showSection('track',this)">Track Record</li>
+    </ul>
+  </div>
+
+   <!-- MAIN -->
+ <div class="main-area">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+
+      <div class="left">
+        <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+        <span>EMBASSY</span>
+      </div>
+
+    <div class="right">
+
+  <label>Park:</label>
+  <select>
+    <option>Embassy Manyata</option>
+  </select>
+
+  <label>Block:</label>
+  <select>
+    <option>F2 Mahogany</option>
+
+  </select>
+
+  <button class="logout-btn" onclick="logout()">Logout</button>
+
+</div>
+
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="section" style="display:block">
+        <h2>Dashboard</h2>
+        <div class="cards">
+          <div class="card" onclick="openCategory('Transformer')">
+            <img src="Transformers.jpeg"><p>Transformers</p>
+          </div>
+          <div class="card" onclick="openCategory('DG')">
+            <img src="DG_sets.jpeg"><p>DG Sets</p>
+          </div>
+          <div class="card" onclick="openCategory('CHILLER')">
+            <img src="Chiller.jpg"><p>Chillers</p>
+          </div>
+        </div>
+
+        <div id="tableWrap" style="display:none">
+          <button class="back-btn" onclick="goBack()">← Back</button>
+          <h3 id="tableTitle"></h3>
+          <table>
+            <thead>
+              <tr>
+                <th>S.No</th>
+              <th>Equipment_description</th>
+              <th>Asset_Location</th>
+              <th>AMD_EOP_asset_code</th>
+              <th>Make</th>
+              <th>Capacity</th>
+              <th>Year_of_installation</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- F2 DETAILS -->
+      <div id="f2" class="section">
+        <h2>F2 – Mahogany Block (Full Details)</h2>
+
+        <h3>F2 Block Details</h3>
+        <table>
+          <tr><th>Building Sqft</th><td>804179</td></tr>
+          <tr><th>RR No</th><td>E8HT79</td></tr>
+          <tr><th>66KV Feeder</th><td>09</td></tr>
+          <tr><th>220KV Feeder</th><td>42</td></tr>
+          <tr><th>Contract Demand</th><td>2500</td></tr>
+          <tr><th>Meter Constant</th><td>12000</td></tr>
+        </table>
+
+        <h3>Equipment Summary (Complete)</h3>
+        <table>
+          <tr><th>SL</th><th>Equipment</th><th>Make</th><th>Capacity</th><th>Qty</th></tr>
+          <tr><td>1</td><td>Transformer</td><td>Universal & Unimag</td><td>2000 KVA</td><td>05</td></tr>
+          <tr><td>2</td><td>DG</td><td>Cummins</td><td>1500 KVA</td><td>07</td></tr>
+          <tr><td>3</td><td>Lift</td><td>TKE</td><td>1360 KG</td><td>19</td></tr>
+          <tr><td>4</td><td>UPS</td><td>Vertiv, Power One, Powertronix</td><td>20KVA #01 & 15KVA #02</td><td>03</td></tr>
+          <tr><td>5</td><td>Water Cooled Chiller</td><td>Blue Star</td><td>350TR #03 & 350TR#02</td><td>05</td></tr>
+          <tr><td>6</td><td>Cooling Tower</td><td>Advance Cooling Tower & Paharpur</td><td>350TR#02 & 370TR#03 & 500TR#01</td><td>06</td></tr>
+          <tr><td>7</td><td>STP</td><td>ASBR</td><td>450 KLD</td><td>01</td></tr>
+          <tr><td>8</td><td>Borewell</td><td>KIRLOSKAR</td><td>3.7 KW</td><td>03</td></tr>
+          <tr><td>9</td><td>Fire Engine</td><td>KIRLOSKAR</td><td>75/102KW/HP</td><td>02</td></tr>
+          <tr><td>10</td><td>Hydrant</td><td>KIRLOSKAR</td><td>52.41KW/100 HP</td><td>02</td></tr>
+          <tr><td>11</td><td>Sprinkler</td><td>KIRLOSKAR</td><td>52.41KW/100 HP</td><td>02</td></tr>
+          <tr><td>12</td><td>JOCKEY</td><td>KIRLOSKAR</td><td>4KW/HP/5.5 HP</td><td>04</td></tr>
+          <tr><td>13</td><td>Booster</td><td>KIRLOSKAR</td><td>11KW/12.5 HP</td><td>02</td></tr>
+          <tr><td>14</td><td>Fire Sump</td><td>-</td><td>1.5 KL & 400 KL</td><td>02</td></tr>
+          <tr><td>15</td><td>Raw Sump</td><td>-</td><td>282 KL</td><td>01</td></tr>
+          <tr><td>16</td><td>Treated Sump</td><td>-</td><td>282 KL</td><td>01</td></tr>
+          <tr><td>17</td><td>Rain Water Sump</td><td>-</td><td>-</td><td>01</td></tr>
+          <tr><td>18</td><td>De-watering Sump Basement</td><td>-</td><td>20 KL</td><td>03</td></tr>
+          <tr><td>19</td><td>De-watering Sump Common Area</td><td>-</td><td>-</td><td>01</td></tr>
+          <tr><td>20</td><td>A Wing & B Wing OHT Fire Tank</td><td>-</td><td>44 KL</td><td>02</td></tr>
+          <tr><td>21</td><td>A Wing & B Wing OHT Treated sump Tank</td><td>-</td><td>33 KL</td><td>02</td></tr>
+          <tr><td>22</td><td>A wing & B Wing OHT Flushing Tank</td><td>-</td><td>28 KL</td><td>02</td></tr>
+          <tr><td>23</td><td>AHU</td><td>Edge Tech</td><td>-</td><td>55</td></tr>
+          <tr><td>24</td><td>FCU Unit</td><td>Edge Tech</td><td>2 TR</td><td>22</td></tr>
+          <tr><td>25</td><td>CSU Unit</td><td>Edge Tech</td><td>12 TR</td><td>03</td></tr>
+          <tr><td>26</td><td>Toilet Exhaust Terrace</td><td>Edge Tech</td><td>-</td><td>08</td></tr>
+          <tr><td>27</td><td>Fresh Air Unit Terrace</td><td>Edge Tech</td><td>-</td><td>12</td></tr>
+          <tr><td>28</td><td>Passenger Lift Lobby Pressurisation Unit</td><td>Nicotra Gebhardt</td><td>2.2 KW</td><td>02</td></tr>
+          <tr><td>29</td><td>Service Lift Lobby Pressurisation Unit</td><td>Nicotra Gebhardt</td><td>5.5 KW</td><td>02</td></tr>
+          <tr><td>30</td><td>Staircase Pressurisation Unit</td><td>Nicotra Gebhardt</td><td>5.5 KW</td><td>06</td></tr>
+          <tr><td>31</td><td>Fire Man Lift Lobby Pressurisation Unit</td><td>Nicotra Gebhardt</td><td>5.5 KW</td><td>01</td></tr>
+          <tr><td>32</td><td>Well Pressurisation Unit</td><td>Nicotra Gebhardt</td><td>30 KW</td><td>02</td></tr>
+          <tr><td>33</td><td>Exhaust Air Fan Basement</td><td>Nicotra Gebhardt</td><td>-</td><td>05</td></tr>
+          <tr><td>34</td><td>Fresh Air Fan Basement</td><td>Nicotra Gebhardt</td><td>-</td><td>03</td></tr>
+          <tr><td>35</td><td>Jet Fan Basement</td><td>Nicotra Gebhardt</td><td>950/250 W</td><td>21</td></tr>
+          <tr><td>36</td><td>Camera</td><td>Honeywell</td><td>-</td><td>64</td></tr>
+        </table>
+      </div>
+
+      <!-- TRACK RECORD -->
+      <div id="track" class="section">
+        <h2>Track Record</h2>
+        <table>
+<tr><th>S.No</th><th>Report Description</th><th>Frequency</th><th>Template Sharing Date</th><th>Submission Date</th><th>Report will be Shared By</th><th>Report will be Shared To</th></tr>
+<tr><td>1</td><td>Daily Report</td><td>Daily</td><td>N/A</td><td>Before 10 AM for previous day</td><td>Block Incharge</td><td>PM</td></tr>
+<tr><td>2</td><td>HSD Report</td><td>Daily</td><td>N/A</td><td>Before 10 AM for previous day</td><td>Ravindran</td><td>PM</td></tr>
+<tr><td>3</td><td>HT Reading sheet</td><td>Monthly</td><td>30th of every month</td><td>2nd of every month</td><td>Alvin</td><td>Link Updates</td></tr>
+<tr><td>4</td><td>TOD Reading sheet</td><td>Monthly</td><td>30th of every month</td><td>2nd of every month</td><td>Alvin</td><td>Link Updates</td></tr>
+<tr><td>5</td><td>EB DG Pre bills sharing to client</td><td>Monthly</td><td>N/A</td><td>2nd of every month</td><td>Block Incharge</td><td>Clients</td></tr>
+<tr><td>6</td><td>SAP Bill shared</td><td>Monthly</td><td>N/A</td><td>4th of every month</td><td>Block Incharge</td><td>Clients</td></tr>
+<tr><td>7</td><td>Invoice submission to clients</td><td>Monthly</td><td>N/A</td><td>5th of every month</td><td>Block Incharge</td><td>Clients</td></tr>
+<tr><td>8</td><td>E-Waste</td><td>Monthly</td><td>30th of every month</td><td>3rd of every month</td><td>Aravind</td><td>Aravind</td></tr>
+<tr><td>9</td><td>Hazardous waste</td><td>Monthly</td><td>30th of every month</td><td>3rd of every month</td><td>Aravind</td><td>Aravind</td></tr>
+<tr><td>10</td><td>Water consumption</td><td>Monthly</td><td>30th of every month</td><td>3rd of every month</td><td>Aravind</td><td>Aravind</td></tr>
+<tr><td>11</td><td>CEIG Calculation sheet</td><td>Monthly</td><td>30th of every month</td><td>1st of every month</td><td>Rajasekar</td><td>Rajasekar</td></tr>
+<tr><td>12</td><td>G Form</td><td>Monthly</td><td>N/A</td><td>2nd of every month</td><td>Rajasekar</td><td>Rajasekar</td></tr>
+<tr><td>13</td><td>Major activity Report</td><td>Monthly</td><td>N/A</td><td>2nd of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>14</td><td>Monthly Diesel Report</td><td>Monthly</td><td>N/A</td><td>5th of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>15</td><td>Recorded MD</td><td>Monthly</td><td>30th of every month</td><td>5th of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>16</td><td>EOP Data</td><td>Monthly</td><td>30th of every month</td><td>5th of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>17</td><td>PPM Updates</td><td>Monthly</td><td>30th of every month</td><td>2nd of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>18</td><td>Head count details</td><td>Monthly</td><td>30th of every month</td><td>2nd of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>19</td><td>Client occupied floor details</td><td>Monthly</td><td>30th of every month</td><td>2nd of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>20</td><td>Chiller KW</td><td>Monthly</td><td>30th of every month</td><td>5th of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>21</td><td>CA Breakup details</td><td>Monthly</td><td>30th of every month</td><td>5th of every month</td><td>Ramesh/MIS</td><td>Link Updates</td></tr>
+<tr><td>22</td><td>Weekly Report</td><td>Weekly</td><td>N/A</td><td>Every Monday EOD</td><td>Block Incharge</td><td>PM</td></tr>
+<tr><td>23</td><td>Monthly Report PPT to PM for sharing with clients</td><td>Monthly</td><td>N/A</td><td>7th of every month</td><td>Block Incharge</td><td>PM</td></tr>
+<tr><td>24</td><td>MIS report Excel</td><td>Monthly</td><td>N/A</td><td>6th of every month</td><td>Block Incharge</td><td>PM</td></tr>
+<tr><td>25</td><td>Utility sheet for ESG</td><td>Monthly</td><td>30th of every month</td><td>6th of every month</td><td>Saravana</td><td>Link Updates</td></tr>
+<tr><td>26</td><td>ESG Supporting documents folder</td><td>Monthly</td><td>30th of every month</td><td>6th of every month</td><td>Saravana</td><td>Link Updates</td></tr>
+<tr><td>27</td><td>PPM Verification in Ops tool</td><td>Weekly</td><td>N/A</td><td>Every week Monday before 10 AM</td><td>Block Incharge</td><td>Ops Tool</td></tr>
+<tr><td>28</td><td>AMD documents Updates</td><td>Monthly</td><td>N/A</td><td>15th of every month</td><td>Block Incharge</td><td>Link Updates</td></tr>
+<tr><td>29</td><td>Energy Management Checklist</td><td>Monthly</td><td>N/A</td><td>15th of every month</td><td>Block Incharge</td><td>Link Updates</td></tr>
+<tr><td>30</td><td>Statutory documents uploads in Ops tool</td><td>Monthly</td><td>N/A</td><td>15th of every month</td><td>Block Incharge</td><td>Ops Tool</td></tr>
+<tr><td>31</td><td>Training tracker</td><td>Monthly</td><td>N/A</td><td>5th of every month</td><td>Block Incharge</td><td>Link Updates</td></tr>
+<tr><td>32</td><td>Walkthrough reports with updates</td><td>Monthly</td><td>N/A</td><td>7th of every month</td><td>Block Incharge</td><td>Saravana</td></tr>
+<tr><td>33</td><td>Safety committee meeting</td><td>Monthly</td><td>N/A</td><td>22nd of every month</td><td>Block Incharge</td><td>Saravana</td></tr>
+<tr><td>34</td><td>Safety observation tracker</td><td>Monthly</td><td>N/A</td><td>5th of every month</td><td>Block Incharge</td><td>Saravana</td></tr>
+<tr><td>35</td><td>Opportunity, HIRA, Initiatives - For MRM</td><td>Monthly</td><td>N/A</td><td>10th of every month</td><td>Block Incharge</td><td>Saravana</td></tr>
+<tr><td>36</td><td>Audit updates (FLS, FSA, Structural, Lift, etc.)</td><td>Bi-Monthly</td><td>N/A</td><td>15th of every month</td><td>Block Incharge</td><td>Saravana</td></tr>
+<tr><td>37</td><td>Park Monthly Report</td><td>Monthly</td><td>N/A</td><td>10th of every month</td><td>Operation Manager</td><td>AGM/DGM</td></tr>
+       
+</table>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- POPUP -->
+
+<div id="details">
+
+<div class="details-box">
+
+<span class="close" onclick="closeDetails()">✖</span>
+
+<h3>Equipment Details</h3>
+
+<table id="detailsTable"></table>
+
+</div>
+
+</div>
+
+<script>
+const assets = [
+ {sno:1,cat:"Transformer",Equipment_description:"Air Cooled Transformer - 1(Dry type)",Asset_Location:"Ground Floor L.T Room",AMD_EOP_asset_coding:"MPF21G0ELTR001",Make:"Universal Transformers",Model:"IS:11171 & 2026",Serial_no:"N/A",Unit:"KVA",Capacity:"2000 ",Year_of_installation:"Existing"},
+ {sno:2,cat:"Transformer",Equipment_description:"Air Cooled Transformer - 2(Dry type)",Asset_Location:"Ground Floor L.T Room",AMD_EOP_asset_coding:"MPF21G0ELTR002",Make:"Universal Transformers",Model:"IS:11171 & 2026",Serial_no:"N/A",Unit:"KVA",Capacity:"2000 ",Year_of_installation:"Existing"},
+ {sno:3,cat:"Transformer",Equipment_description:"Air Cooled Transformer - 3(Dry type)",Asset_Location:"Ground Floor L.T Room",AMD_EOP_asset_coding:"MPF22G0ELTR003",Make:"Universal Transformers",Model:"IS:11171 & 2026",Serial_no:"N/A",Unit:"KVA",Capacity:"2000 ",Year_of_installation:"Existing"},
+ {sno:4,cat:"Transformer",Equipment_description:"Air Cooled Transformer - 4(Dry type)",Asset_Location:"Ground Floor L.T Room",AMD_EOP_asset_coding:"MPF22G0ELTR004",Make:"Universal Transformers",Model:"IS:11171 & 2026",Serial_no:"N/A",Unit:"KVA",Capacity:"2000 ",Year_of_installation:"Existing"},
+ {sno:5,cat:"Transformer",Equipment_description:"Air Cooled Transformer - 5(Dry type)",Asset_Location:"Ground Floor L.T Room",AMD_EOP_asset_coding:"MPF22G0ELTR005",Make:"Uni Mag Power Transformers",Model:"IS:11171 & 2026",Serial_no:"N/A",Unit:"KVA",Capacity:"2000 ",Year_of_installation:"Nov/24"},
+ {sno:6,cat:"Transformer",Equipment_description:"OLTC-1A",Asset_Location:"Ground Floor LT Room",AMD_EOP_asset_code:"MPF21G0ELLG001",Make:"On load gears",Model:"ABS111100DELTA129170G",Serial_no:"21128",Unit:"KVA/KV",Capacity:"2000/11 ",Year_of_installation:"Existing"},
+ {sno:7,cat:"Transformer",Equipment_description:"OLTC-2A",Asset_Location:"Ground Floor LT Room",AMD_EOP_asset_code:"MPF21G0ELLG002",Make:"On load gears",Model:"ABS111100DELTA129170G",Serial_no:"20856",Unit:"KVA/KV",Capacity:"2000/11 ",Year_of_installation:"Existing"},
+ {sno:8,cat:"Transformer",Equipment_description:"OLTC-1B",Asset_Location:"Ground Floor LT Room",AMD_EOP_asset_code:"MPF22G0ELLG003",Make:"On load gears",Model:"ABS111100DELTA129170G",Serial_no:"20855",Unit:"KVA/KV",Capacity:"2000/11 ",Year_of_installation:"Existing"},
+ {sno:9,cat:"Transformer",Equipment_description:"OLTC-1B",Asset_Location:"Ground Floor LT Room",AMD_EOP_asset_code:"MPF22G0ELLG004",Make:"On load gears",Model:"ABS111100DELTA129170G",Serial_no:"21130",Unit:"KVA/KV",Capacity:"2000/11 ",Year_of_installation:"Existing"},
+  {sno:10,cat:"Transformer",Equipment_description:"OLTC-5",Asset_Location:"Ground Floor LT Room",AMD_EOP_asset_code:"MPF22G0ELLG005",Make:"On load gears",Model:"ABS111100DELTA129170G",Serial_no:"P5294",Unit:"KVA/KV",Capacity:" ",Year_of_installation:"Nov/24"},
+{sno:1,cat:"DG",Equipment_description:"A-wing D.G-1 Engine",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGGE001",Make:"Cummins",Model:"KTA-50-G8-1",Serial_no:"25335243",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:1,cat:"DG",Equipment_description:"A-wing D.G-2 Engine",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGGE002",Make:"Cummins",Model:"KTA-50-G8-1",Serial_no:"25335245",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:3,cat:"DG",Equipment_description:"A-wing D.G-3 Engine",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGGE003",Make:"Cummins",Model:"KTA-50-G8-1",Serial_no:"25331729",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:4,cat:"DG",Equipment_description:"B-wing D.G-1 Engine",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGGE004",Make:"Cummins",Model:"KTA-50-G8-1",Serial_no:"25337002",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:5,cat:"DG",Equipment_description:"B-wing D.G-2 Engine",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGGE005",Make:"Cummins",Model:"KTA-50-G8-1",Serial_no:"25336784",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:6,cat:"DG",Equipment_description:"B-wing D.G-3 Engine",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGGE006",Make:"Cummins",Model:"KTA-50-G8-1",Serial_no:"25335609",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:7,cat:"DG",Equipment_description:"B-wing D.G-4 Engine",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGGE007",Make:"Cummins",Model:"KTA-50-G8",Serial_no:"5121267",Unit:"KVA",Capacity:"1500",Year_of_installation:"Nov/24"},
+{sno:8,cat:"DG",Equipment_description:"LUB OIL PRIMING PUMP D.G-1 Awing",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGPUP001",Make:"L H P INDUCTION MOTOR",Model:"0A80MGA-A",Serial_no:"100172680",Unit:"HP/KW",Capacity:"1",Year_of_installation:"Existing"},
+{sno:9,cat:"DG",Equipment_description:"LUB OIL PRIMING PUMP D.G-2 Awing",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGPUP002",Make:"L H P INDUCTION MOTOR",Model:"0A80MGA-A",Serial_no:"IKT3524",Unit:"HP/KW",Capacity:"1",Year_of_installation:"Existing"},
+{sno:10,cat:"DG",Equipment_description:"LUB OIL PRIMING PUMP D.G-3 Awing",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGPUP003",Make:"L H P INDUCTION MOTOR",Model:"0A80MGA-A",Serial_no:"J74135461",Unit:"HP/KW",Capacity:"1",Year_of_installation:"Existing"},
+{sno:11,cat:"DG",Equipment_description:"LUB OIL PRIMING PUMP D.G-1 Bwing",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGPUP004",Make:"L H P INDUCTION MOTOR",Model:"0A80MGA-A",Serial_no:"GB401385",Unit:"HP/KW",Capacity:"1",Year_of_installation:"Existing"},
+{sno:12,cat:"DG",Equipment_description:"LUB OIL PRIMING PUMP D.G-2 Bwing",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGPUP005",Make:"L H P INDUCTION MOTOR",Model:"0A80MGA-A",Serial_no:"FB400980",Unit:"HP/KW",Capacity:"1",Year_of_installation:"Existing"},
+{sno:13,cat:"DG",Equipment_description:"LUB OIL PRIMING PUMP D.G-3 Bwing",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGPUP006",Make:"L H P INDUCTION MOTOR",Model:"0A80MGA-A",Serial_no:"BB415380",Unit:"HP/KW",Capacity:"1",Year_of_installation:"Existing"},
+{sno:14,cat:"DG",Equipment_description:"LUB OIL PRIMING PUMP D.G-4 Bwing",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGPUP007",Make:"L H P INDUCTION MOTOR",Model:"3AM60",Serial_no:"2000545194",Unit:"KW/HP",Capacity:"2.2/3",Year_of_installation:"Nov/24"},
+{sno:15,cat:"DG",Equipment_description:"A wing DG exhaust fan - 1",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGEX001",Make:"KIRLOSKAR",Model:"N/A",Serial_no:"N/A",Unit:"HP/KW",Capacity:"7.5",Year_of_installation:"Existing"},
+{sno:16,cat:"DG",Equipment_description:"A wing DG exhaust fan - 2",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGEX002",Make:"KIRLOSKAR",Model:"N/A",Serial_no:"N/A",Unit:"HP/KW",Capacity:"7.5",Year_of_installation:"Existing"},
+{sno:17,cat:"DG",Equipment_description:"A wing DG exhaust fan - 3",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGEX003",Make:"KIRLOSKAR",Model:"N/A",Serial_no:"N/A",Unit:"HP/KW",Capacity:"7.5",Year_of_installation:"Existing"},
+{sno:18,cat:"DG",Equipment_description:"B wing DG exhaust fan - 1",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGEX004",Make:"KIRLOSKAR",Model:"N/A",Serial_no:"N/A",Unit:"HP/KW",Capacity:"7.5",Year_of_installation:"Existing"},
+{sno:19,cat:"DG",Equipment_description:"B wing DG exhaust fan - 2",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGEX005",Make:"KIRLOSKAR",Model:"N/A",Serial_no:"N/A",Unit:"HP/KW",Capacity:"7.5",Year_of_installation:"Existing"},
+{sno:20,cat:"DG",Equipment_description:"B wing DG exhaust fan - 3",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF22G0DGEX006",Make:"KIRLOSKAR",Model:"N/A",Serial_no:"N/A",Unit:"HP/KW",Capacity:"7.5",Year_of_installation:"Existing"},
+{sno:21,cat:"DG",Equipment_description:"A-wing D.G-1 Alternator",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGGA001",Make:"STAMFORD",Model:"Pi 734C2",Serial_no:"8F14537",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:22,cat:"DG",Equipment_description:"A-wing D.G-2 Alternator",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGGA002",Make:"STAMFORD",Model:"Pi 734C2",Serial_no:"8E14036",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:23,cat:"DG",Equipment_description:"A-wing D.G-3 Alternator",Asset_Location:"Ground Floor D.G room",AMD_EOP_asset_code:"MPF21G0DGGA003",Make:"STAMFORD",Model:"Pi 734C2",Serial_no:"8C08845",Unit:"KVA",Capacity:"1500",Year_of_installation:"Existing"},
+{sno:1,cat:"CHILLER",Equipment_description:"Water cooled Chiller-1",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRACCH001",Make:"BLUE STAR",Model:"LCW-370V335454",Serial_no:"AX10002",Unit:"KW/TR",Capacity:"1290.27/350",Year_of_installation:"06/01/2024"},
+{sno:2,cat:"CHILLER",Equipment_description:"Water cooled Chiller-2",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRACCH002",Make:"BLUE STAR",Model:"LCW-370V335454",Serial_no:"AX10001",Unit:"KW/TR",Capacity:"1290.27/350",Year_of_installation:"06/01/2024"},
+{sno:3,cat:"CHILLER",Equipment_description:"Water cooled Chiller-3",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRACCH003",Make:"BLUE STAR",Model:"LCW-370V335454",Serial_no:"AX10003",Unit:"KW/TR",Capacity:"1290.27/350",Year_of_installation:"06/01/2024"},
+{sno:4,cat:"CHILLER",Equipment_description:"Water cooled Chiller-4",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRACCH004",Make:"BLUE STAR",Model:"LCWX2-350EEF",Serial_no:"1227E08",Unit:"TR",Capacity:"350",Year_of_installation:"Existing"},
+{sno:5,cat:"CHILLER",Equipment_description:"Water cooled Chiller-5",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRACCH005",Make:"BLUE STAR",Model:"LCWX2-350F",Serial_no:"1228E08",Unit:"TR",Capacity:"350",Year_of_installation:"Existing"},
+{sno:6,cat:"CHILLER",Equipment_description:"Cooling tower-01",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU013",Make:"Advance cooling tower",Model:"TT1162",Serial_no:"38900809",Unit:"TR",Capacity:"22/390",Year_of_installation:"Existing"},
+{sno:7,cat:"CHILLER",Equipment_description:"Cooling tower-02",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU014",Make:"Advance cooling tower",Model:"TT1163",Serial_no:"4090809",Unit:"TR",Capacity:"22/390",Year_of_installation:"Existing"},
+{sno:8,cat:"CHILLER",Equipment_description:"Cooling tower-03",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU015",Make:"-",Model:"-",Serial_no:"-",Unit:"TR",Capacity:"350",Year_of_installation:"2024"},
+{sno:9,cat:"CHILLER",Equipment_description:"Cooling tower-04",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU016",Make:"-",Model:"-",Serial_no:"-",Unit:"TR",Capacity:"350",Year_of_installation:"2024"},
+{sno:10,cat:"CHILLER",Equipment_description:"Cooling tower-05",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU017",Make:"-",Model:"-",Serial_no:"-",Unit:"TR",Capacity:"350",Year_of_installation:"2024"},
+{sno:11,cat:"CHILLER",Equipment_description:"Cooling tower-06",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU018",Make:"-",Model:"-",Serial_no:"-",Unit:"TR",Capacity:"500",Year_of_installation:"2024"},
+{sno:12,cat:"CHILLER_PUMP",Equipment_description:"Condenser pump-01",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU001",Make:"Xylem",Model:"2HE3206-0405-A00003",Serial_no:"240180934848",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+{sno:13,cat:"CHILLER_PUMP",Equipment_description:"Condenser pump-02",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU002",Make:"Xylem",Model:"2HE3206-0405-A00003",Serial_no:"240381027489",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+{sno:14,cat:"CHILLER_PUMP",Equipment_description:"Condenser pump-03",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU003",Make:"Xylem",Model:"2HE3206-0405-A00003",Serial_no:"240381027487",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+{sno:15,cat:"CHILLER_PUMP",Equipment_description:"Condenser pump-04",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU004",Make:"Xylem",Model:"2HE3206-0405-A00003",Serial_no:"240381027486",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+{sno:16,cat:"CHILLER_PUMP",Equipment_description:"Condenser pump-05",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU005",Make:"Xylem",Model:"2HE3206-0405-A00003",Serial_no:"240381027488",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+{sno:17,cat:"CHILLER_PUMP",Equipment_description:"Primary pump-01",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU006",Make:"Xylem",Model:"2HE3206-0435-A00002",Serial_no:"240381024675",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+{sno:18,cat:"CHILLER_PUMP",Equipment_description:"Primary pump-02",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU007",Make:"Xylem",Model:"2HE3206-0435-A00002",Serial_no:"240381024672",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+{sno:19,cat:"CHILLER_PUMP",Equipment_description:"Primary pump-03",Asset_Location:"Terrace",AMD_EOP_asset_code:"MPF20TRCHPU008",Make:"Xylem",Model:"2HE3206-0435-A00002",Serial_no:"240381022185",Unit:"HP/KW",Capacity:"40/30",Year_of_installation:"2024"},
+];
+
+
+function login(){
+  if(uid.value==="B00769" && pwd.value==="test@123"){
+    loginPage.style.display="none";
+    appPage.style.display="flex";
+  } else
+  {
+     error.innerText="Invalid Login";
+}
+}
+function logout(){
+  appPage.style.display="none";
+  loginPage.style.display="flex";
+  uid.value="";
+  pwd.value="";
+}
+/* SIDEBAR TOGGLE */
+
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("hide");
+}
+function showSection(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.style.display="none");
+  document.getElementById(id).style.display="block";
+  document.querySelectorAll('.sidebar li').forEach(li=>li.classList.remove('active'));
+  el.classList.add('active');
+  tableWrap.style.display="none";
+}
+function openCategory(cat){
+  tableWrap.style.display="block";
+  tableTitle.innerText = cat + " List";
+  tbody.innerHTML="";
+  assets.filter(a=>a.cat===cat).forEach(a=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${a.sno}</td><td>${a.Equipment_description}</td><td>${a.Asset_Location}</td><td>${a.AMD_EOP_asset_code}</td><td>${a.Make}</td><td>${a.Capacity}</td><td>${a.Year_of_installation}</td>`;
+    tr.onclick=()=>showDetails(a);
+    tbody.appendChild(tr);
+  });
+}
+function goBack(){ tableWrap.style.display="none"; }
+function showDetails(asset){
+
+let html="";
+
+for(let key in asset)
+{
+html+=`<tr>
+<th>${key.replaceAll("_"," ")}</th>
+<td>${asset[key]}</td>
+</tr>`;
+}
+
+detailsTable.innerHTML=html;
+
+details.style.display="flex";
+
+}
+
+
+function closeDetails(){
+details.style.display="none";
+}
+</script>
+
+</body>
+</html>
